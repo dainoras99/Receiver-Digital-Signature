@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,7 +18,7 @@ namespace Receiver_Digital_Signature_
         {
             InitializeComponent();
         }
-
+        Encoding encoding = Encoding.GetEncoding("437");
         SimpleTcpServer server;
 
 
@@ -33,7 +34,13 @@ namespace Receiver_Digital_Signature_
         {
             messageFromTheSender.Invoke((MethodInvoker)delegate ()
             {
-                messageFromTheSender.Text += e.MessageString;
+                string receivedMessage = e.MessageString;
+                receivedMessage.Substring(0, receivedMessage.Length - 1);
+                string stringSplit = "AtSkYrImaSA!@345f";
+
+                string[] splitReceivedMessage = receivedMessage.Split(new string[] { stringSplit }, StringSplitOptions.None);
+                messageFromTheSender.Text = splitReceivedMessage[0];
+                digitalSignatureFromTheSender.Text = splitReceivedMessage[1];
             });
         }
 
@@ -47,6 +54,35 @@ namespace Receiver_Digital_Signature_
         {
             if (server.IsStarted)
                 server.Stop();
+            signatureConfirmedLabel.Visible = false;
+        }
+        public bool VerifySignedHash()
+        {
+            try
+            {
+                byte[] dataToVerify = encoding.GetBytes(messageFromTheSender.Text);
+                byte[] signedData = encoding.GetBytes(digitalSignatureFromTheSender.Text);
+
+                RSACryptoServiceProvider RSAalg = new RSACryptoServiceProvider();
+
+                RSAParameters Key = RSAalg.ExportParameters(true);
+                return RSAalg.VerifyData(dataToVerify, SHA256.Create(), signedData);
+            }
+            catch (CryptographicException e)
+            {
+                Console.WriteLine(e.Message);
+
+                return false;
+            }
+        }
+
+        private void confirmTheSignatureButton_Click(object sender, EventArgs e)
+        {
+            if (VerifySignedHash() == true)
+                signatureConfirmedLabel.Text = "Verified";
+            else
+                signatureConfirmedLabel.Text = "Not verified";
+            signatureConfirmedLabel.Visible = true;
         }
     }
 }

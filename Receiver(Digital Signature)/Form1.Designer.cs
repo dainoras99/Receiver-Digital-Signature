@@ -106,15 +106,16 @@ namespace Receiver_Digital_Signature_
             this.confirmTheSignatureButton.TabIndex = 8;
             this.confirmTheSignatureButton.Text = "Confirm the signature";
             this.confirmTheSignatureButton.UseVisualStyleBackColor = true;
+            this.confirmTheSignatureButton.Click += new System.EventHandler(this.confirmTheSignatureButton_Click);
             // 
             // signatureConfirmedLabel
             // 
             this.signatureConfirmedLabel.AutoSize = true;
             this.signatureConfirmedLabel.Location = new System.Drawing.Point(159, 307);
             this.signatureConfirmedLabel.Name = "signatureConfirmedLabel";
-            this.signatureConfirmedLabel.Size = new System.Drawing.Size(35, 13);
+            this.signatureConfirmedLabel.Size = new System.Drawing.Size(0, 13);
             this.signatureConfirmedLabel.TabIndex = 9;
-            this.signatureConfirmedLabel.Text = "label5";
+            this.signatureConfirmedLabel.Visible = false;
             // 
             // label5
             // 
