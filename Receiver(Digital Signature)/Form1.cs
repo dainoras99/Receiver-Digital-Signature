@@ -19,7 +19,18 @@ namespace Receiver_Digital_Signature_
             InitializeComponent();
         }
         Encoding encoding = Encoding.GetEncoding("437");
+        RSAParameters Key;
         SimpleTcpServer server;
+        byte[] modulus = null;
+        byte[] exponent = null;
+        byte[] p = null;
+        byte[] q = null;
+        byte[] d = null;
+        byte[] dp = null;
+        byte[] dq = null;
+        byte[] inverseq = null;
+        string messageFromTheSenderString;
+        string digitalSignatureValueFromTheSenderString;
 
 
         private void Form1_Load(object sender, EventArgs e)
@@ -39,8 +50,21 @@ namespace Receiver_Digital_Signature_
                 string stringSplit = "AtSkYrImaSA!@345f";
 
                 string[] splitReceivedMessage = receivedMessage.Split(new string[] { stringSplit }, StringSplitOptions.None);
+                messageFromTheSenderString = splitReceivedMessage[0];
+                digitalSignatureValueFromTheSenderString = splitReceivedMessage[1];
                 messageFromTheSender.Text = splitReceivedMessage[0];
                 digitalSignatureFromTheSender.Text = splitReceivedMessage[1];
+               // messageFromTheSender.Text = messageFromTheSenderString;
+               // digitalSignatureFromTheSender.Text = digitalSignatureValueFromTheSenderString;
+                modulus = encoding.GetBytes(splitReceivedMessage[2]);
+                exponent = encoding.GetBytes(splitReceivedMessage[3]);
+                p = encoding.GetBytes(splitReceivedMessage[4]);
+                q = encoding.GetBytes(splitReceivedMessage[5]);
+                d = encoding.GetBytes(splitReceivedMessage[6]);
+                dp = encoding.GetBytes(splitReceivedMessage[7]);
+                dq = encoding.GetBytes(splitReceivedMessage[8]);
+                inverseq = encoding.GetBytes(splitReceivedMessage[9]);
+                inverseq = inverseq.Take(inverseq.Length - 1).ToArray();
             });
         }
 
@@ -60,12 +84,19 @@ namespace Receiver_Digital_Signature_
         {
             try
             {
+                Key = new RSAParameters();
                 byte[] dataToVerify = encoding.GetBytes(messageFromTheSender.Text);
                 byte[] signedData = encoding.GetBytes(digitalSignatureFromTheSender.Text);
-
+                Key.Modulus = modulus;
+                Key.Exponent = exponent;
+                Key.P = p;
+                Key.Q = q;
+                Key.DP = dp;
+                Key.DQ = dq;
+                Key.InverseQ = inverseq;
+                Key.D = d;
                 RSACryptoServiceProvider RSAalg = new RSACryptoServiceProvider();
-
-                RSAParameters Key = RSAalg.ExportParameters(true);
+                RSAalg.ImportParameters(Key);
                 return RSAalg.VerifyData(dataToVerify, SHA256.Create(), signedData);
             }
             catch (CryptographicException e)
